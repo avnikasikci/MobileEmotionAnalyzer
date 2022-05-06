@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_emotion/UI/controllers/layoutController.dart';
@@ -10,24 +11,24 @@ import 'package:provider/provider.dart';
 // void main() {
 //   runApp(const MyApp());
 // }
+List<CameraDescription>? cameras;
 void main() async {
   //runApp(const MyApp());
 
 //GetIt paketi ile DI yapıyoruz her yerden ulaşılabilmesi için main içinde tanımladım.
   // WidgetsFlutterBinding.ensureInitialized();
-
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  cameras = await availableCameras();
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(
       create: (context) => LayoutController(),
       lazy: true,
     ),
   ], child: MyApp()));
-
-  WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
 
   //runApp(MyApp());
 }
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       //home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
       home: LayoutView(),
     );
   }
