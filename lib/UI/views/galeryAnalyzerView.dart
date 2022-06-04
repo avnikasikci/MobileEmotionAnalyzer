@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_emotion/Enums/ImagePredictLabelEnum.dart';
+import 'package:flutter_emotion/UI/models/imageAnalyzeLabelModel.dart';
 import 'package:flutter_emotion/UI/models/imageAnalyzeModel.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite/tflite.dart';
@@ -24,10 +26,12 @@ class _GaleryAnalyzerViewState extends State<GaleryAnalyzerView> {
   final ImagePicker imagePicker = ImagePicker();
   List<XFile>? imageFileList = [];
   List<ImageAnalyzeModel>? analyzeModelList = [];
+  List<ImageAnalyzeLabelModel>? imageAnalyzeLabelModel = [];
   bool _expanded = false;
   var _test = "Full Screen";
 
   void selectImages() async {
+    clearImages();
     final List<XFile>? selectedImages = await imagePicker.pickMultiImage();
     if (selectedImages!.isNotEmpty) {
       imageFileList!.addAll(selectedImages);
@@ -39,127 +43,204 @@ class _GaleryAnalyzerViewState extends State<GaleryAnalyzerView> {
   void clearImages() async {
     imageFileList = [];
     analyzeModelList = [];
+    imageAnalyzeLabelModel = [];
     setState(() {});
   }
 
   void analyzImages() async {
-    // for (int index = 0; index < imageFileList!.length; index++) {
-    //   runModel(imageFileList![index].path);
-    // }
-
-    // imageFileList!.forEach((element) async {
-    //     runModel(element.path);
-    // });
+    //clearImages();
     analyzeModelList = [];
+    List<String>? analyzeModelLabelList = [];
+    imageAnalyzeLabelModel = [];
     for (var model in imageFileList!) {
       var path = model.path;
       var predictions = await Tflite.runModelOnImage(path: path);
       predictions!.forEach((element) {
-        print("element2=");
-        print(element);
-        var model = ImageAnalyzeModel(path, element['label']);
+        int resultIdTxt = 0;
+        ImagePredictLabelEnum.values.forEach((enumEntity) => {
+              if (enumEntity == element['label'])
+                {resultIdTxt = enumEntity.index}
+            });
+
+        var model = ImageAnalyzeModel(path, element['label'], resultIdTxt);
 
         setState(() {
-          //output = element['label'];
           analyzeModelList?.add(model);
+          analyzeModelLabelList?.add(element['label']);
         });
       });
     }
+    analyzeModelLabelList = analyzeModelLabelList?.toSet().toList();
+
+    analyzeModelLabelList!.forEach((labelTxt) {
+      var allLabelModelList = analyzeModelList
+          ?.where((element) => element.result == labelTxt)
+          .toList();
+      var modelLabel =
+          ImageAnalyzeLabelModel(labelTxt, false, allLabelModelList);
+      imageAnalyzeLabelModel?.add(modelLabel);
+    });
 
     setState(() {});
   }
 
   runModel(String path) async {
-    // var destinationImage = File(path);
-
-    // List<Uint8List> bytes = [];
-    // var bytesConcat = await destinationImage.readAsBytes();
-    // bytes.add(bytesConcat);
-    // var decodedImage =
-    //     await decodeImageFromList(destinationImage.readAsBytesSync());
-
-    var predictions2 = await Tflite.runModelOnImage(path: path);
-    predictions2!.forEach((element) {
-      print("element2=");
-      print(element);
-      var model = ImageAnalyzeModel(path, element['label']);
-
+    var predictions = await Tflite.runModelOnImage(path: path);
+    predictions!.forEach((element) {
+      var model = ImageAnalyzeModel(path, element['label'], 0);
       setState(() {
-        //output = element['label'];
         analyzeModelList?.add(model);
       });
     });
-
-    // var predictions = await Tflite.runModelOnFrame(
-    //     bytesList: bytes,
-    //     // bytesList: cameraImage!.planes.map((plane) {
-    //     //   return plane.bytes;
-    //     // }).toList(),
-    //     imageHeight: decodedImage!.height,
-    //     imageWidth: decodedImage!.width,
-    //     imageMean: 127.5,
-    //     imageStd: 127.5,
-    //     rotation: 90,
-    //     numResults: 2,
-    //     threshold: 0.1,
-    //     asynch: true);
-    // predictions!.forEach((element) {
-    //   print("element=");
-    //   print(element);
-
-    //   var model = ImageAnalyzeModel(path, element['label']);
-
-    //   setState(() {
-    //     //output = element['label'];
-    //     analyzeModelList?.add(model);
-    //   });
-    // });
   }
 
   loadModel() async {
     await Tflite.loadModel(
-        model: "assets/modelVGoogle.tflite", labels: "assets/labels.txt");
+        model: "assets/model_unquant.tflite", labels: "assets/labels.txt");
   }
 
   @override
   Widget build(BuildContext context) {
+    return DefaultTextStyle(
+      style: Theme.of(context).textTheme.bodyText2!,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints viewportConstraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: viewportConstraints.maxHeight,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                //mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Row(
+                    children: [
+                      Container(
+                        // A fixed-height child.
+                        //  color: const Color(0xffeeee00), // Yellow
+                        height: 50.0,
+                        alignment: Alignment.center,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            selectImages();
+                          },
+                          child: Text('Select Images'),
+                        ),
+                      ),
+                      SizedBox(
+                        //height: 100,
+                        width: 16,
+                      ),
+                      Container(
+                        // A fixed-height child.
+                        //  color: const Color(0xffeeee00), // Yellow
+                        height: 50.0,
+                        alignment: Alignment.center,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            clearImages();
+                          },
+                          child: Text('Clear Images'),
+                        ),
+                      ),
+                      SizedBox(
+                        //height: 100,
+                        width: 16,
+                      ),
+                      Container(
+                        // A fixed-height child.
+                        // color: const Color(0xffeeee00), // Yellow
+                        height: 50.0,
+                        alignment: Alignment.center,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            analyzImages();
+                          },
+                          child: Text('Analyz Images'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    height: 280.0,
+                    alignment: Alignment.center,
+                    child: GridView.builder(
+                        itemCount: imageFileList!.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3),
+                        itemBuilder: (BuildContext context, int index) {
+                          return Image.file(
+                            File(imageFileList![index].path),
+                          );
+                        }),
+                  ),
+                  ExpansionPanelList(
+                    //expandedHeaderPadding: EdgeInsets.all(10.0),
+                    // animationDuration: Duration(milliseconds: 2000),
+                    expansionCallback: (int index, bool isExpanded) {
+                      setState(() {
+                        imageAnalyzeLabelModel![index].expanded =
+                            !imageAnalyzeLabelModel![index].expanded;
+                      });
+                    },
+                    children: imageAnalyzeLabelModel!
+                        .map<ExpansionPanel>((ImageAnalyzeLabelModel item) {
+                      return ExpansionPanel(
+                        headerBuilder: (BuildContext context, bool isExpanded) {
+                          return ListTile(
+                            title: Text(item.labelTxt),
+                          );
+                        },
+                        body: SizedBox(
+                          height: 200,
+                          width: 220,
+                          child: SafeArea(
+                            child: Expanded(
+                              child: GridView.builder(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3),
+                                  padding: const EdgeInsets.all(8),
+                                  itemCount: item.modelList?.length,
+                                  itemBuilder:
+                                      (BuildContext context, int indexModel) {
+                                    return Image.file(
+                                      File(item.modelList![indexModel].path),
+                                      //scale: 0.2,
+                                      width: 150,
+                                      height: 120,
+                                      //fit: BoxFit.fill,
+                                    );
+                                  }),
+                            ),
+                          ),
+                        ),
+     
+                        isExpanded: item.expanded,
+                      );
+                    }).toList(),
+                  ),
+               
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build2(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Galery Emotion Detect'),
         ),
         body: SafeArea(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                margin: EdgeInsets.all(10),
-                color: Colors.green,
-                child: ExpansionPanelList(
-                  animationDuration: Duration(milliseconds: 2000),
-                  children: [
-                    ExpansionPanel(
-                      headerBuilder: (context, isExpanded) {
-                        return ListTile(
-                          title: Text(
-                            'Click To Expand',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        );
-                      },
-                      body: ListTile(
-                        title: Text('Description text',
-                            style: TextStyle(color: Colors.black)),
-                      ),
-                      //isExpanded: _expanded,
-                      canTapOnHeader: true,
-                    ),
-                  ],
-                  dividerColor: Colors.grey,
-                  expansionCallback: (panelIndex, isExpanded) {
-                    //_expanded = !_expanded;
-                    setState(() {});
-                  },
-                ),
-              ),
               ElevatedButton(
                 onPressed: () {
                   selectImages();
@@ -198,20 +279,67 @@ class _GaleryAnalyzerViewState extends State<GaleryAnalyzerView> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: GridView.builder(
-                      itemCount: analyzeModelList!.length,
+                      itemCount: imageAnalyzeLabelModel!.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3),
+                          crossAxisCount: 1),
                       itemBuilder: (BuildContext context, int index) {
                         return Scaffold(
-                            body: SafeArea(
+                            body: SingleChildScrollView(
                                 child: Column(
                           children: [
-                            Text("Analyz= " + analyzeModelList![index].result),
-                            Image.file(
-                              File(analyzeModelList![index].path),
-                              //File("path"),
-                              fit: BoxFit.cover,
-                            )
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              color: Colors.green,
+                              child: ExpansionPanelList(
+                                animationDuration: Duration(milliseconds: 2000),
+                                children: [
+                                  ExpansionPanel(
+                                    headerBuilder: (context, isExpanded) {
+                                      return ListTile(
+                                        title: Text(
+                                          // 'Click To Expand' +
+                                          imageAnalyzeLabelModel![index]
+                                              .labelTxt,
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                      );
+                                    },
+                                    body: SizedBox(
+                                      height: 210,
+                                      child: SafeArea(
+                                        child: ListView.builder(
+                                            padding: const EdgeInsets.all(8),
+                                            itemCount:
+                                                imageAnalyzeLabelModel![index]
+                                                    .modelList
+                                                    ?.length,
+                                            // itemBuilder: (_, indexModel) =>
+                                            itemBuilder: (BuildContext context,
+                                                int indexModel) {
+                                              return ListTile(
+                                                  title: Image.file(
+                                                File(imageAnalyzeLabelModel![
+                                                        index]
+                                                    .modelList![indexModel]
+                                                    .path),
+                                                fit: BoxFit.cover,
+                                              ));
+                                            }),
+                                      ),
+                                    ),
+                                    isExpanded:
+                                        imageAnalyzeLabelModel![index].expanded,
+                                    canTapOnHeader: true,
+                                  ),
+                                ],
+                                dividerColor: Colors.grey,
+                                expansionCallback: (panelIndex, isExpanded) {
+                                  imageAnalyzeLabelModel![index].expanded =
+                                      !imageAnalyzeLabelModel![index].expanded;
+                                  setState(() {});
+                                },
+                              ),
+                            ),
                           ],
                         )));
                       }),

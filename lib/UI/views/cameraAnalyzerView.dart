@@ -68,7 +68,7 @@ class _CameraAnalyzerViewState extends State<CameraAnalyzerView> {
 
   loadModel() async {
     await Tflite.loadModel(
-        model: "assets/modelVGoogle.tflite", labels: "assets/labels.txt");
+        model: "assets/model_unquant.tflite", labels: "assets/labels.txt");
   }
 
   @override

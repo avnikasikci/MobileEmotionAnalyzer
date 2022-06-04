@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_emotion/UI/Base/IBaseState.dart';
 import 'package:flutter_emotion/UI/controllers/layoutController.dart';
 import 'package:flutter_emotion/UI/models/navigationItem.dart';
-import 'package:flutter_emotion/UI/provider/navigationProvider.dart';
 import 'package:flutter_emotion/UI/views/components/appbar.dart';
 import 'package:flutter_emotion/UI/views/components/layoutDrawer.dart';
 import 'package:flutter_emotion/UI/views/galeryAnalyzerView.dart';
@@ -23,7 +21,7 @@ class LayoutView extends StatefulWidget {
   _LayoutViewState createState() => _LayoutViewState();
 }
 
-class _LayoutViewState extends State<LayoutView> with IBaseState {
+class _LayoutViewState extends State<LayoutView> {
   @override
   void initState() {
     super.initState();
@@ -32,19 +30,7 @@ class _LayoutViewState extends State<LayoutView> with IBaseState {
 
   @override
   Widget build(BuildContext context) {
-    // final provider = Provider.of<NavigationProvider>(context);
-    // final navigationItem = provider.navigationItem;
 
-    // switch (navigationItem) {
-    //   case NavigationItem.header:
-    //     return LayoutHeader();
-    //   case NavigationItem.home:
-    //     return HomeView();
-    //   case NavigationItem.cameraAnalyzer:
-    //     return CameraAnalyzerView();
-    //   default:
-    //     return HomeView();
-    // }
 
     widget.pageNumber = Provider.of<LayoutController>(context).pageNumber;
     widget.navigationItem =
@@ -64,14 +50,6 @@ class _LayoutViewState extends State<LayoutView> with IBaseState {
             default:
               return HomeView();
           }
-
-          // return widget.pageNumber == 1
-          //     ? HomeView()
-          //     : widget.pageNumber == 2
-          //         ? CameraAnalyzerView()
-          //         : widget.pageNumber == 3
-          //             ? GaleryAnalyzerView()
-          //             : HomeView();
         },
       ),
     );

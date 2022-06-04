@@ -1,66 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_emotion/UI/Constants/ColorConstant.dart';
 import 'package:flutter_emotion/UI/controllers/layoutController.dart';
 import 'package:flutter_emotion/UI/models/navigationItem.dart';
 import 'package:flutter_emotion/UI/views/components/drawerListTile.dart';
 import 'package:provider/provider.dart';
 
 Widget LayoutDrawer(BuildContext context) {
-  // return Drawer(
-  //   child: Consumer<LayoutController>(builder: (context, value, child) {
-  //     return Container(
-  //       color: ColorConstants.instance.ebonyClay,
-  //       child: ListView(
-  //         children: [
-  //           DrawerHeader(
-  //             child: Text(
-  //               'MENÜ',
-  //               style: Theme.of(context)
-  //                   .textTheme
-  //                   .headline5!
-  //                   .copyWith(color: Colors.white),
-  //             ),
-  //           ),
-  //           GestureDetector(
-  //             child: DrawerListTile(
-  //               title: 'Home',
-  //               icon: Icons.home,
-  //             ),
-  //             onTap: () {
-  //               value.changePage(NavigationItem.home.index);
-  //               value.setNavigationItem(NavigationItem.home);
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           GestureDetector(
-  //             child: DrawerListTile(
-  //               title: 'Camera Analyzer',
-  //               icon: Icons.home,
-  //             ),
-  //             onTap: () {
-  //               value.changePage(NavigationItem.cameraAnalyzer.index);
-  //               value.setNavigationItem(NavigationItem.cameraAnalyzer);
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //           GestureDetector(
-  //             child: DrawerListTile(
-  //               title: 'Galery Analyzer',
-  //               icon: Icons.person,
-  //             ),
-  //             onTap: () {
-  //               value.changePage(NavigationItem.galleryAnalyzer.index);
-  //               value.setNavigationItem(NavigationItem.galleryAnalyzer);
-
-  //               Navigator.of(context).pop();
-  //             },
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   }),
-  // );
-
   final padding = EdgeInsets.symmetric(horizontal: 20);
 
   return Drawer(
